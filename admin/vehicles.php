@@ -182,6 +182,7 @@ if(isset($_SESSION["logged_in"])){
                                         <th scope="col">Model</th>
                                         <th scope="col">Color</th>
                                         <th scope="col">Registration Date</th>
+                                        <th scope="col">Status</th>
                                         <th scope="col" class="text-center">Action</th>
                                     </tr>
                                 </thead>
@@ -205,6 +206,7 @@ if(isset($_SESSION["logged_in"])){
                                             echo '<td>' . $row['model'] . '</td>';
                                             echo '<td>' . $row['color'] . '</td>';
                                             echo '<td>' . date("F d, Y", strtotime($row['registration_date'])) . '</td>';
+                                            echo '<td>' . $row['status'] . '</td>';
                                             echo '<td>';
                                             echo '<div class="d-flex justify-content-center">';
                                             echo '<button title="Add Violation" class="btn btn-secondary me-2" data-bs-toggle="modal" 
@@ -277,6 +279,9 @@ if(isset($_SESSION["logged_in"])){
 
             <dt class="col-sm-3">Engine Number:</dt>
             <dd class="col-sm-9" id="view-engine_number"></dd>
+
+            <dt class="col-sm-3">Status:</dt>
+            <dd class="col-sm-9" id="view-status"></dd>
             </dl>
         </div>
         <div class="modal-footer">
@@ -498,6 +503,7 @@ if(isset($_SESSION["logged_in"])){
                         $('#view-registration_date').text(response.data.registration_date);
                         $('#view-chassis_number').text(response.data.chassis_number);
                         $('#view-engine_number').text(response.data.engine_number);
+                        $('#view-status').text(response.data.status);
 
                         const viewModal = new bootstrap.Modal(document.getElementById('viewVehicleModal'));
                         viewModal.show();

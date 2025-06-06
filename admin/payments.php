@@ -321,6 +321,20 @@ if(isset($_SESSION["logged_in"])){
             });
         }
 
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the session has the update success flag set
+            <?php if (isset($_SESSION['update_success'])): ?>
+                var updateToast = new bootstrap.Toast(document.getElementById('updateToast'));
+                updateToast.show();
+                <?php unset($_SESSION['update_success']); // Clear the session variable after showing the toast ?>
+            <?php endif; ?>
+        });
+    </script>
+
+    <script>
         function printReceipt(paymentId) {
             // AJAX call to fetch payment details and generate receipt content
             $.ajax({
@@ -357,7 +371,10 @@ if(isset($_SESSION["logged_in"])){
                                     <tr><th>Received By</th><td>${data.received_by}</td></tr>
                                 </table>
                                 <p class="center" style="margin-top:30px;">Thank you for your payment!</p>
-                                <script>window.print(); window.onafterprint = function(){ window.close(); }</script>
+                                <script>
+                                    window.print(); 
+                                    window.onafterprint = function() { window.close(); }
+                                <\/script>
                             </body>
                             </html>
                         `;
@@ -372,21 +389,7 @@ if(isset($_SESSION["logged_in"])){
                 }
             });
         }
-
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Check if the session has the update success flag set
-            <?php if (isset($_SESSION['update_success'])): ?>
-                var updateToast = new bootstrap.Toast(document.getElementById('updateToast'));
-                updateToast.show();
-                <?php unset($_SESSION['update_success']); // Clear the session variable after showing the toast ?>
-            <?php endif; ?>
-        });
-    </script>
-
-    
+        </script>    
 
 </body>
 </html>

@@ -40,7 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Existing fines record for the day — update total_amount
         $fine = $checkFinesResult->fetch_assoc();
         $updatedAmount = $fine['total_amount'] + $fineAmount;
-        $updateFines = "UPDATE fines SET total_amount = '$updatedAmount' WHERE fineid = '{$fine['fineid']}'";
+        $updateFines = "UPDATE fines 
+                        SET total_amount = '$updatedAmount' 
+                        WHERE fineid = '{$fine['fineid']}'";
         $connection->query($updateFines);
     } else {
         // New fine record for this vehicle and day
@@ -50,6 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insertFines = "INSERT INTO fines (vehicleid, total_amount, date_issued, due_date, status) 
                         VALUES ('$vehicleid', '$fineAmount', '$date_committed', '$due_date', '$status')";
         $connection->query($insertFines);
+    }
+
+    // ─── Step 4: Mark vehicle status as "Violation" ───
+    $updateVehicle = "UPDATE vehicles 
+                      SET status = 'Violation' 
+                      WHERE vehicleid = '$vehicleid'";
+    if (! $connection->query($updateVehicle)) {
+        // Log, but don’t break the response
+        error_log("Failed to update vehicle status for ID $vehicleid: " . $connection->error);
     }
 
     echo json_encode(['success' => true]);

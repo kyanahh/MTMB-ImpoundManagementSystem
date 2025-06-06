@@ -15,6 +15,7 @@ if (isset($_POST['query'])) {
                 OR vehicles.vehicle_type LIKE '%$query%' 
                 OR vehicles.model LIKE '%$query%' 
                 OR vehicles.color LIKE '%$query%' 
+                OR vehicles.status LIKE '%$query%' 
                 OR DATE_FORMAT(vehicles.registration_date, '%M %d, %Y') LIKE '%$query%' 
                 OR DATE_FORMAT(vehicles.registration_date, '%m/%d/%Y') LIKE '%$query%'
                 OR vehicles.registration_date LIKE '%$query%') ORDER BY vehicleid DESC";
@@ -39,6 +40,7 @@ if (isset($_POST['query'])) {
             echo '<td>' . $row['model'] . '</td>';
             echo '<td>' . $row['color'] . '</td>';
             echo '<td>' . date("F d, Y", strtotime($row['registration_date'])) . '</td>';
+            echo '<td>' . $row['status'] . '</td>';
             echo '<td>';
             echo '<div class="d-flex justify-content-center">';
             echo '<button title="View" class="btn btn-info me-2" onclick="view(' . $row['vehicleid'] . ')"><i class="bi bi-eye"></i></button>';

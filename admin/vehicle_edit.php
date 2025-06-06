@@ -54,6 +54,7 @@ if (isset($_GET["id"])) {
         $registration_date = $row["registration_date"];
         $chassis_number = $row["chassis_number"];
         $engine_number = $row["engine_number"];
+        $status = $row["status"];
 
     } else {
         $errorMessage = "Vehicle not found.";
@@ -70,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
     $registration_date = $_POST["registration_date"];
     $chassis_number =  strtoupper($_POST["chassis_number"]);
     $engine_number =  strtoupper($_POST["engine_number"]);
-
+    $status =  ucwords($_POST["status"]);
 
     // Base update query
     $query1 = "UPDATE vehicles 
@@ -81,7 +82,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
                    color = '$color', 
                    registration_date = '$registration_date', 
                    chassis_number = '$chassis_number', 
-                   engine_number = '$engine_number' WHERE vehicleid = '$id'";
+                   engine_number = '$engine_number',
+                   status = '$status' WHERE vehicleid = '$id'";
 
     $result = $connection->query($query1);
 
@@ -340,6 +342,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
                         </div>
                     </div>
                     
+                    <div class="row mb-3 mt-2">
+                        <div class="col-sm-2">
+                            <label class="form-label mt-2 px-3">Status<span class="text-danger">*</span></label>
+                        </div>
+                        <div class="col-sm-4">
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="" disabled selected>Select a vehicle status</option>
+                                <option value="Violation" <?php echo ($status == "Violation") ? "selected" : ""; ?>>Violation</option>
+                                <option value="Impounded" <?php echo ($status == "Impounded") ? "selected" : ""; ?>>Impounded</option>
+                                <option value="Released" <?php echo ($status == "Released") ? "selected" : ""; ?>>Released</option>
+                                <option value="Unclaimed" <?php echo ($status == "Unclaimed") ? "selected" : ""; ?>>Unclaimed</option>
+                                <option value="Under Investigation" <?php echo ($status == "Under Investigation") ? "selected" : ""; ?>>Under Investigation</option>
+                                <option value="For Auction" <?php echo ($status == "For Auction") ? "selected" : ""; ?>>For Auction</option>
+                                <option value="Auctioned" <?php echo ($status == "Auctioned") ? "selected" : ""; ?>>Auctioned</option>
+                            </select>                        
+                        </div>
+                    </div>
+                        
                     <div class="row mb-3 mt-2 float-end">
                         <div class="col-sm-5">
                             <button type="submit" class="btn btn-primary px-5"><i class="bi bi-check-lg"></i></button>
