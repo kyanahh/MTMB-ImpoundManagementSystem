@@ -209,9 +209,15 @@ if(isset($_SESSION["logged_in"])){
                                             echo '<td>' . $row['status'] . '</td>';
                                             echo '<td>';
                                             echo '<div class="d-flex justify-content-center">';
+
                                             echo '<button title="Add Violation" class="btn btn-secondary me-2" data-bs-toggle="modal" 
                                             data-bs-target="#addModal" onclick="openAddModal(' . $row['vehicleid'] . ')">
                                             <i class="bi bi-plus"></i><i class="bi bi-exclamation-triangle"></i></button>';
+
+                                            echo '<button title="Impound Vehicle" class="btn btn-warning me-2" data-bs-toggle="modal" 
+                                            data-bs-target="#impoundModal" onclick="openImpoundModal(' . $row['vehicleid'] . ')">
+                                            <i class="bi bi-truck-flatbed"></i></button>';
+
                                             echo '<button title="View" class="btn btn-info me-2" onclick="view(' . $row['vehicleid'] . ')"><i class="bi bi-eye"></i></button>';
                                             echo '<button title="Edit" class="btn btn-primary me-2" onclick="edit(' . $row['vehicleid'] . ')"><i class="bi bi-pencil-square"></i></button>';
                                             echo '<button title="Delete" class="btn btn-danger" onclick="del(' . $row['vehicleid'] . ')"><i class="bi bi-trash"></i></button>';
@@ -353,7 +359,7 @@ if(isset($_SESSION["logged_in"])){
                                 <input type="text" class="form-control" id="vehicleid" name="vehicleid" disabled>
                             </div>
                             <div>
-                                <label for="violationid" class="form-label">Violation Type</label>
+                                <label for="violationid" class="form-label">Violation Type<span class="text-danger">*</span></label>
                                 <select class="form-control" name="violationid" id="violationid" required>
                                     <option value="" disabled selected>Select Vehicle Violation</option>
                                     <?php
@@ -373,8 +379,43 @@ if(isset($_SESSION["logged_in"])){
                                 </select>                            
                             </div>
                             <div class="mb-3">
-                                <label for="date_committed" class="form-label">Date Committed</label>
+                                <label for="date_committed" class="form-label">Date Committed<span class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="date_committed" name="date_committed" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <input type="text" class="form-control" id="remarks" name="remarks">                     
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impound Modal -->
+    <div class="modal fade" id="impoundModal" tabindex="-1" aria-labelledby="impoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="impoundModalLabel">Impound Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="impoundForm">
+                        <div class="mb-3">
+                            <div>
+                                <label for="impound_vehicleid" class="form-label">Vehicle ID<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="impound_vehicleid" name="vehicleid" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="date_impounded" class="form-label">Date Impounded<span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date_impounded" name="date_impounded" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="reason" name="reason" required>
                             </div>
                             <div class="mb-3">
                                 <label for="remarks" class="form-label">Remarks</label>
@@ -577,6 +618,70 @@ if(isset($_SESSION["logged_in"])){
                 },
                 error: function () {
                     showDynamicToast('An error occurred while adding the violation.', 'danger');
+                },
+            });
+        });
+
+        //---------------------------Impound---------------------------//
+        // Open the modal and load only the  ID
+        function openImpoundModal(vid) {
+            // Clear all fields except id
+            $('#date_impounded').val('');
+            $('#reason').val('');
+            $('#remarks').val('');
+            
+            // Load vehicle ID
+            $.ajax({
+                url: 'impound_getid.php',
+                type: 'POST',
+                data: { vehicleid: vid },
+                success: function (response) {
+                    const result = JSON.parse(response);
+
+                    if (result.success) {
+                        $('#impound_vehicleid').val(result.data.vehicleid);
+                        $('#impoundModal').modal('show'); // Show modal after setting data
+                    } else {
+                        showDynamicToast('Error fetching vehicle data: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while fetching the vehicle data.', 'danger');
+                },
+            });
+        }
+
+        // Handle the form submission for adding a violation
+        $('#impoundForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const vehicleid = $('#impound_vehicleid').val();
+            const date_impounded = $('#date_impounded').val();
+            const reason = $('#reason').val();
+            const remarks = $('#remarks').val();
+
+            $.ajax({
+                url: 'impound_add.php',
+                type: 'POST',
+                data: {
+                    vehicleid: vehicleid,
+                    date_impounded: date_impounded,
+                    reason: reason,
+                    remarks: remarks
+                },
+                success: function (response) {
+                    const result = JSON.parse(response);
+
+                    if (result.success) {
+                        $('#impoundModal').modal('hide');
+                        showDynamicToast('Record added successfully!', 'success');
+                        setTimeout(() => location.reload(), 2000); // Optional reload
+                    } else {
+                        showDynamicToast('Error adding record: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while adding the record.', 'danger');
                 },
             });
         });

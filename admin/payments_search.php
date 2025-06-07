@@ -5,12 +5,18 @@ require("../server/connection.php");
 if (isset($_POST['query'])) {
     $query = mysqli_real_escape_string($connection, $_POST['query']);
     if (!empty($query)) {
-        $sql = "SELECT payments.*, fines.fineid, 
-                fines.total_amount, users.firstname, users.lastname  
-                FROM payments INNER JOIN fines 
-                ON payments.fineid = fines.fineid 
+        $sql = "SELECT 
+                    payments.*, 
+                    fines.fineid, 
+                    fines.total_amount, 
+                    vehicles.platenumber,
+                    users.firstname, 
+                    users.lastname  
+                FROM payments 
+                INNER JOIN fines ON payments.fineid = fines.fineid 
+                INNER JOIN vehicles ON fines.vehicleid = vehicles.vehicleid
                 INNER JOIN users ON payments.received_by = users.userid 
-                WHERE (fines.fineid LIKE '%$query%' 
+                WHERE (vehicles.platenumber LIKE '%$query%' 
                 OR fines.total_amount LIKE '%$query%' 
                 OR users.firstname LIKE '%$query%' 
                 OR users.lastname LIKE '%$query%' 
@@ -20,10 +26,16 @@ if (isset($_POST['query'])) {
                 OR payments.amount_paid LIKE '%$query%' 
                 OR payments.payment_method LIKE '%$query%') ORDER BY paymentid DESC";
     } else {
-        $sql = "SELECT payments.*, fines.fineid, 
-                fines.total_amount, users.firstname, users.lastname  
-                FROM payments INNER JOIN fines 
-                ON payments.fineid = fines.fineid 
+        $sql = "SELECT 
+                    payments.*, 
+                    fines.fineid, 
+                    fines.total_amount, 
+                    vehicles.platenumber,
+                    users.firstname, 
+                    users.lastname  
+                FROM payments 
+                INNER JOIN fines ON payments.fineid = fines.fineid 
+                INNER JOIN vehicles ON fines.vehicleid = vehicles.vehicleid
                 INNER JOIN users ON payments.received_by = users.userid 
                 ORDER BY paymentid DESC";
     }

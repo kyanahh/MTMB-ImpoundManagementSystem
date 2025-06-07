@@ -209,7 +209,6 @@ if(isset($_SESSION["logged_in"])){
                                             echo '<button title="Add Payment" class="btn btn-primary me-2" data-bs-toggle="modal" 
                                             data-bs-target="#addModal" onclick="openAddModal(' . $row['fineid'] . ')">
                                             </i><i class="bi bi-cash-stack"></i></button>';
-                                            echo '<button title="Paid" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#confirmModal" onclick="openConfirmModal(' . $row['fineid'] . ')"><i class="bi bi-check"></i></button>';
                                             }
                                             echo '<button title="Delete" class="btn btn-danger" onclick="del(' . $row['fineid'] . ')"><i class="bi bi-trash"></i></button>';
                                             echo '</div>';
@@ -337,7 +336,7 @@ if(isset($_SESSION["logged_in"])){
                                 <input type="text" class="form-control" id="fineid" name="fineid" disabled>
                             </div>
                             <div>
-                                <label for="amount_paid" class="form-label">Amount Paid</label>
+                                <label for="amount_paid" class="form-label">Amount Paid<span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="amount_paid" name="amount_paid" required>                         
                             </div>
                         </div>

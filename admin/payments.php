@@ -177,7 +177,7 @@ if(isset($_SESSION["logged_in"])){
                                 <thead class="table-light" style="position: sticky; top: 0;">
                                     <tr>
                                         <th scope="col">#</th>
-                                        <th scope="col">Fine ID</th>
+                                        <th scope="col">Plate Number</th>
                                         <th scope="col">Total Amount</th>
                                         <th scope="col">Amount Paid</th>
                                         <th scope="col">Change Amount</th>
@@ -190,27 +190,35 @@ if(isset($_SESSION["logged_in"])){
                                 <tbody class="table-group-divider">
                                 <?php
                                     // Query the database to fetch user data
-                                    $result = $connection->query("SELECT payments.*, fines.fineid, 
-                                    fines.total_amount, users.firstname, users.lastname  
-                                    FROM payments INNER JOIN fines 
-                                    ON payments.fineid = fines.fineid 
-                                    INNER JOIN users ON payments.received_by = users.userid 
-                                    ORDER BY paymentid DESC");
+                                    $result = $connection->query("
+                                        SELECT 
+                                            payments.*, 
+                                            fines.fineid, 
+                                            fines.total_amount, 
+                                            vehicles.platenumber,
+                                            users.firstname, 
+                                            users.lastname  
+                                        FROM payments 
+                                        INNER JOIN fines ON payments.fineid = fines.fineid 
+                                        INNER JOIN vehicles ON fines.vehicleid = vehicles.vehicleid
+                                        INNER JOIN users ON payments.received_by = users.userid 
+                                        ORDER BY paymentid DESC
+                                    ");
 
-                                    if ($result->num_rows > 0) {
+                                if ($result->num_rows > 0) {
                                         $count = 1; 
 
                                         while ($row = $result->fetch_assoc()) {
                                             echo '<tr>';
                                             echo '<td>' . $count . '</td>';
-                                            echo '<td>' . $row['fineid'] . '</td>';
+                                            echo '<td>' . $row['platenumber'] . '</td>';
                                             echo '<td>' . $row['total_amount'] . '</td>';
                                             echo '<td>' . $row['amount_paid'] . '</td>';
                                             $balance = $row['total_amount'] - $row['amount_paid'];
                                             echo '<td>' . $balance . '</td>';
                                             echo '<td>' . date("F d, Y", strtotime($row['date_paid'])) . '</td>';
                                             echo '<td>' . $row['payment_method'] . '</td>';
-                                            echo '<td>' . $row['received_by'] . '</td>';
+                                            echo '<td>' . $row['firstname'] . ' ' . $row['lastname'] . '</td>';
                                             echo '<td>';
                                             echo '<div class="d-flex justify-content-center">';
                                             echo '<button class="btn btn-sm btn-secondary" onclick="printReceipt(' . $row['paymentid'] . ')">';
@@ -362,7 +370,7 @@ if(isset($_SESSION["logged_in"])){
                                 <h2>Payment Receipt</h2>
                                 <table>
                                     <tr><th>Payment ID</th><td>${data.paymentid}</td></tr>
-                                    <tr><th>Fine ID</th><td>${data.fineid}</td></tr>
+                                    <tr><th>Plate Number</th><td>${data.platenumber}</td></tr>
                                     <tr><th>Total Amount</th><td>${data.total_amount}</td></tr>
                                     <tr><th>Amount Paid</th><td>${data.amount_paid}</td></tr>
                                     <tr><th>Change Amount</th><td>${data.change_amount}</td></tr>

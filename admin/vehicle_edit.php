@@ -348,7 +348,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
                         </div>
                         <div class="col-sm-4">
                             <select class="form-select" id="status" name="status" required>
-                                <option value="" disabled selected>Select a vehicle status</option>
+                                <option value="" disabled <?php echo ($status == "") ? "selected" : ""; ?>>Select a vehicle status</option>
                                 <option value="Violation" <?php echo ($status == "Violation") ? "selected" : ""; ?>>Violation</option>
                                 <option value="Impounded" <?php echo ($status == "Impounded") ? "selected" : ""; ?>>Impounded</option>
                                 <option value="Released" <?php echo ($status == "Released") ? "selected" : ""; ?>>Released</option>
@@ -356,7 +356,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
                                 <option value="Under Investigation" <?php echo ($status == "Under Investigation") ? "selected" : ""; ?>>Under Investigation</option>
                                 <option value="For Auction" <?php echo ($status == "For Auction") ? "selected" : ""; ?>>For Auction</option>
                                 <option value="Auctioned" <?php echo ($status == "Auctioned") ? "selected" : ""; ?>>Auctioned</option>
-                            </select>                        
+                            </select>                    
                         </div>
                     </div>
                         
