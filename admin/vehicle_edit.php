@@ -217,6 +217,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($id)) {
                 </li>
 
                 <li>
+                    <a href="auctions.php" class="text-decoration-none px-3 py-2 d-block">
+                    <i class="bi bi-tag me-2"></i>Auctions
+                    </a>
+                </li>
+
+                <li>
                     <a href="userlogs.php" class="text-decoration-none px-3 py-2 d-block">
                     <i class="bi bi-journal me-2"></i>User Logs
                     </a>

@@ -177,6 +177,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <i class="bi bi-clipboard-data me-2"></i>Investigations
                     </a>
                 </li>
+                
+                <li>
+                    <a href="auctions.php" class="text-decoration-none px-3 py-2 d-block">
+                    <i class="bi bi-tag me-2"></i>Auctions
+                    </a>
+                </li>
 
                 <li>
                     <a href="userlogs.php" class="text-decoration-none px-3 py-2 d-block">
