@@ -166,6 +166,9 @@ if(isset($_SESSION["logged_in"])){
                     <div class="col input-group mb-3">
                         <input type="text" class="form-control" id="searchInput" placeholder="Search" aria-describedby="button-addon2" oninput="search()">
                     </div>
+                    <div class="col-sm-1">
+                        <a href="vehicles_add.php" class="btn btn-dark px-4"><i class="bi bi-plus-lg text-white"></i></a>
+                    </div>
                 </div>
                 
                 <div class="card" style="height: 600px;">
@@ -210,6 +213,7 @@ if(isset($_SESSION["logged_in"])){
                                             echo '<td>';
                                             echo '<div class="d-flex justify-content-center">';
 
+                                            
                                             echo '<button title="Add Violation" class="btn btn-secondary me-2" data-bs-toggle="modal" 
                                             data-bs-target="#addModal" onclick="openAddModal(' . $row['vehicleid'] . ')">
                                             <i class="bi bi-plus"></i><i class="bi bi-exclamation-triangle"></i></button>';
@@ -217,6 +221,10 @@ if(isset($_SESSION["logged_in"])){
                                             echo '<button title="Impound Vehicle" class="btn btn-warning me-2" data-bs-toggle="modal" 
                                             data-bs-target="#impoundModal" onclick="openImpoundModal(' . $row['vehicleid'] . ')">
                                             <i class="bi bi-truck-flatbed"></i></button>';
+
+                                            echo '<button title="Investigate" class="btn btn-secondary me-2" data-bs-toggle="modal" 
+                                            data-bs-target="#invModal" onclick="openInvModal(' . $row['vehicleid'] . ')">
+                                            <i class="bi bi-person-exclamation"></i></button>';
 
                                             echo '<button title="View" class="btn btn-info me-2" onclick="view(' . $row['vehicleid'] . ')"><i class="bi bi-eye"></i></button>';
                                             echo '<button title="Edit" class="btn btn-primary me-2" onclick="edit(' . $row['vehicleid'] . ')"><i class="bi bi-pencil-square"></i></button>';
@@ -418,8 +426,39 @@ if(isset($_SESSION["logged_in"])){
                                 <input type="text" class="form-control" id="reason" name="reason" required>
                             </div>
                             <div class="mb-3">
-                                <label for="remarks" class="form-label">Remarks</label>
-                                <input type="text" class="form-control" id="remarks" name="remarks">                     
+                                <label for="impound_remarks" class="form-label">Remarks</label>
+                                <input type="text" class="form-control" id="impound_remarks" name="remarks">                     
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Investigate Modal -->
+    <div class="modal fade" id="invModal" tabindex="-1" aria-labelledby="invModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invModalLabel">Investigate</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="invForm">
+                        <div class="mb-3">
+                            <div>
+                                <label for="inv_vehicleid" class="form-label">Vehicle ID<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="inv_vehicleid" name="vehicleid" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="case_type" class="form-label">Case Type<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="case_type" name="case_type" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="invdescription" class="form-label">Description<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="invdescription" name="description" required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -624,17 +663,17 @@ if(isset($_SESSION["logged_in"])){
 
         //---------------------------Impound---------------------------//
         // Open the modal and load only the  ID
-        function openImpoundModal(vid) {
+        function openImpoundModal(vehicleid) {
             // Clear all fields except id
             $('#date_impounded').val('');
             $('#reason').val('');
-            $('#remarks').val('');
+            $('#impound_remarks').val('');
             
             // Load vehicle ID
             $.ajax({
                 url: 'impound_getid.php',
                 type: 'POST',
-                data: { vehicleid: vid },
+                data: { vehicleid: vehicleid },
                 success: function (response) {
                     const result = JSON.parse(response);
 
@@ -658,7 +697,7 @@ if(isset($_SESSION["logged_in"])){
             const vehicleid = $('#impound_vehicleid').val();
             const date_impounded = $('#date_impounded').val();
             const reason = $('#reason').val();
-            const remarks = $('#remarks').val();
+            const remarks = $('#impound_remarks').val();
 
             $.ajax({
                 url: 'impound_add.php',
@@ -685,6 +724,65 @@ if(isset($_SESSION["logged_in"])){
                 },
             });
         });
+
+        //--------------------------- Investigate ---------------------------//
+        function openInvModal(vehicleid) {
+            $('#case_type').val('');
+            $('#invdescription').val('');
+            
+            // Load vehicle ID
+            $.ajax({
+                url: 'investigate_getid.php',
+                type: 'POST',
+                data: { vehicleid: vehicleid },
+                success: function (response) {
+                    const result = JSON.parse(response);
+
+                    if (result.success) {
+                        $('#inv_vehicleid').val(result.data.vehicleid);
+                        $('#invModal').modal('show');
+                    } else {
+                        showDynamicToast('Error fetching vehicle data: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while fetching the vehicle data.', 'danger');
+                },
+            });
+        }
+
+        $('#invForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const vehicleid = $('#inv_vehicleid').val();
+            const case_type = $('#case_type').val();
+            const description = $('#invdescription').val();
+
+            $.ajax({
+                url: 'investigate_add.php',
+                type: 'POST',
+                data: {
+                    vehicleid: vehicleid,
+                    case_type: case_type,
+                    description: description
+                },
+                dataType: 'text',  // prevent jQuery from auto-parsing
+                success: function (response) {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        $('#impoundModal').modal('hide');
+                        showDynamicToast('Record added successfully!', 'success');
+                        setTimeout(() => location.reload(), 2000); // Optional reload
+                    } else {
+                        showDynamicToast('Error adding record: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while saving investigation.', 'danger');
+                }
+            });
+        });
+
 
     </script>
 
