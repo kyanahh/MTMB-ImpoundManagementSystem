@@ -1,16 +1,15 @@
 <?php
 require("../server/connection.php");
-session_start(); // Make sure session is started
+session_start(); 
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vehicleid = $connection->real_escape_string($_POST['vehicleid'] ?? '');
-    $case_type = $connection->real_escape_string($_POST['case_type'] ?? '');
-    $description = $connection->real_escape_string($_POST['description'] ?? '');
+    $schedule_date = $connection->real_escape_string($_POST['schedule_date'] ?? '');
+    $starting_bid = $connection->real_escape_string($_POST['starting_bid'] ?? '');
     $date_reported = date("Y-m-d H:i:s");
     $status = "Open";
 
-    // Make sure session is active and userid is set
     $investigated_by = isset($_SESSION["userid"]) ? $connection->real_escape_string($_SESSION["userid"]) : null;
 
     if (!$investigated_by) {
@@ -18,10 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $query = "INSERT INTO investigations (vehicleid, case_type, description, status, date_reported, investigated_by) VALUES 
-    ('$vehicleid', '$case_type', '$description', '$status', '$date_reported', '$investigated_by')";
+    $query = "INSERT INTO auctions (vehicleid, schedule_date, starting_bid, status) VALUES 
+    ('$vehicleid', '$schedule_date', '$starting_bid', '$status')";
 
-    $updateQuery = "UPDATE vehicles SET status = 'Under Investigation' WHERE vehicleid = '$vehicleid'";
+    $updateQuery = "UPDATE vehicles SET status = 'For Auction' WHERE vehicleid = '$vehicleid'";
     $connection->query($updateQuery);
 
     if ($connection->query($query)) {

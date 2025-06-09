@@ -165,7 +165,7 @@ $last_updated = date("Y-m-d H:i:s");
                 </div>
             </nav>
 
-            <!-- List of Inventory-->
+            <!-- List of Auction-->
             <div class="px-3">
                 <div class="row">
                     <div class="col-sm-2">
@@ -184,20 +184,18 @@ $last_updated = date("Y-m-d H:i:s");
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Plate Number</th>
-                                        <th scope="col">Case Type</th>
-                                        <th scope="col">Description</th>
+                                        <th scope="col">Scheduled Date</th>
+                                        <th scope="col">Starting Bid</th>
                                         <th scope="col">Status</th>
-                                        <th scope="col">Date Reported</th>
-                                        <th scope="col">Investigated By</th>
                                         <th scope="col" class="text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="table-group-divider">
                                 <?php
                                     // Query the database to fetch user data
-                                    $result = $connection->query("SELECT investigations.*, vehicles.platenumber 
-                                    FROM investigations INNER JOIN vehicles ON investigations.vehicleid = vehicles.vehicleid 
-                                    ORDER BY investigationid DESC");
+                                    $result = $connection->query("SELECT auctions.*, vehicles.platenumber 
+                                    FROM auctions INNER JOIN vehicles ON auctions.vehicleid = vehicles.vehicleid 
+                                    ORDER BY auctionid DESC");
 
                                     if ($result->num_rows > 0) {
                                         $count = 1; 
@@ -206,15 +204,13 @@ $last_updated = date("Y-m-d H:i:s");
                                             echo '<tr>';
                                             echo '<td>' . $count . '</td>';
                                             echo '<td>' . $row['platenumber'] . '</td>';
-                                            echo '<td>' . $row['case_type'] . '</td>';
-                                            echo '<td>' . $row['description'] . '</td>';
+                                            echo '<td>' . date("F d, Y", strtotime($row['schedule_date'])) . '</td>';
+                                            echo '<td>' . $row['starting_bid'] . '</td>';
                                             echo '<td>' . $row['status'] . '</td>';
-                                            echo '<td>' . date("F d, Y", strtotime($row['date_reported'])) . '</td>';
-                                            echo '<td>' . $row['investigated_by'] . '</td>';
                                             echo '<td>';
                                             echo '<div class="d-flex justify-content-center">';
                                             if ($row['status'] == "Open") {
-                                            echo '<button title="Close Status" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#confirmModal" onclick="openConfirmModal(' . $row['investigationid'] . ')"><i class="bi bi-x"></i></button>';
+                                            echo '<button title="Auctioned" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#confirmModal" onclick="openConfirmModal(' . $row['auctionid'] . ')"><i class="bi bi-check"></i></button>';
                                             }
                                             echo '</div>';
                                             echo '</td>';
@@ -222,7 +218,7 @@ $last_updated = date("Y-m-d H:i:s");
                                             $count++; 
                                         }
                                     } else {
-                                        echo '<tr><td colspan="5">No area found.</td></tr>';
+                                        echo '<tr><td colspan="5">No record found.</td></tr>';
                                     }
                                 ?>
                                 </tbody>
@@ -243,11 +239,11 @@ $last_updated = date("Y-m-d H:i:s");
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Close Investigation</h5>
+                    <h5 class="modal-title" id="confirmModalLabel">Mark as Completed</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to close this case?
+                    Are you sure you want to mark this as completed?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -315,8 +311,6 @@ $last_updated = date("Y-m-d H:i:s");
         </div>
     </div>
 
-    <!-- Script -->
-    
     <script>
 
         //--------------------------- Dynamic Toast Notification ---------------------------//
@@ -334,7 +328,6 @@ $last_updated = date("Y-m-d H:i:s");
             const toast = new bootstrap.Toast(toastElement);
             toast.show();
         }
-
 
         //---------------------------Search Inventory Results---------------------------//c
         function search() {
@@ -354,14 +347,14 @@ $last_updated = date("Y-m-d H:i:s");
             });
         }
 
-        //---------------------------Close ---------------------------//
+        //---------------------------Complete ---------------------------//
         // JavaScript code for modal and toast handling
         let IdToConfirm = null;
 
         // Function to open the confirmation modal
-        function openConfirmModal(investigationid) {
-            console.log("Opening modal for record ID:", investigationid); // Debugging log
-            IdToConfirm = investigationid;
+        function openConfirmModal(auctionid) {
+            console.log("Opening modal for record ID:", auctionid); // Debugging log
+            IdToConfirm = auctionid;
             const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
             confirmModal.show();
         }
@@ -370,9 +363,9 @@ $last_updated = date("Y-m-d H:i:s");
         document.getElementById('confirmButton').addEventListener('click', function () {
             if (IdToConfirm) {
                $.ajax({
-                    url: "investigation_close.php",
+                    url: "auction_confirm.php",
                     method: "POST",
-                    data: { investigationid: IdToConfirm },
+                    data: { auctionid: IdToConfirm },
                     dataType: "json",
                     success: function(response) {
                         console.log('AJAX success:', response);
@@ -392,7 +385,7 @@ $last_updated = date("Y-m-d H:i:s");
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX error:', status, error, xhr.responseText);
-                        showToast('Error confirming the payment', 'bg-danger');
+                        showToast('Error confirming the record', 'bg-danger');
                     }
                 });
 

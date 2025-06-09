@@ -228,10 +228,14 @@ if(isset($_SESSION["logged_in"])){
                                             data-bs-target="#impoundModal" onclick="openImpoundModal(' . $row['vehicleid'] . ')">
                                             <i class="bi bi-truck-flatbed"></i></button>';
 
-                                            echo '<button title="Investigate" class="btn btn-secondary me-2" data-bs-toggle="modal" 
+                                            echo '<button title="Investigate" class="btn btn-dark me-2" data-bs-toggle="modal" 
                                             data-bs-target="#invModal" onclick="openInvModal(' . $row['vehicleid'] . ')">
                                             <i class="bi bi-person-exclamation"></i></button>';
 
+                                            echo '<button title="For Auction" class="btn btn-success me-2" data-bs-toggle="modal" 
+                                            data-bs-target="#auctionModal" onclick="openAuctionModal(' . $row['vehicleid'] . ')">
+                                            <i class="bi bi-tag"></i></button>';
+                                            
                                             echo '<button title="View" class="btn btn-info me-2" onclick="view(' . $row['vehicleid'] . ')"><i class="bi bi-eye"></i></button>';
                                             echo '<button title="Edit" class="btn btn-primary me-2" onclick="edit(' . $row['vehicleid'] . ')"><i class="bi bi-pencil-square"></i></button>';
                                             echo '<button title="Delete" class="btn btn-danger" onclick="del(' . $row['vehicleid'] . ')"><i class="bi bi-trash"></i></button>';
@@ -465,6 +469,37 @@ if(isset($_SESSION["logged_in"])){
                             <div class="mb-3">
                                 <label for="invdescription" class="form-label">Description<span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="invdescription" name="description" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Auction Modal -->
+    <div class="modal fade" id="auctionModal" tabindex="-1" aria-labelledby="auctionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="auctionModalLabel">For Auction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="auctionForm">
+                        <div class="mb-3">
+                            <div>
+                                <label for="auction_vehicleid" class="form-label">Vehicle ID<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="auction_vehicleid" name="vehicleid" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="schedule_date" class="form-label">Schedule Date<span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="schedule_date" name="schedule_date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="starting_bid" class="form-label">Starting Bid<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="starting_bid" name="starting_bid" required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -788,6 +823,65 @@ if(isset($_SESSION["logged_in"])){
                 }
             });
         });
+
+        //--------------------------- Auction ---------------------------//
+        function openAuctionModal(vehicleid) {
+            $('#schedule_date').val('');
+            $('#starting_bid').val('');
+            
+            // Load vehicle ID
+            $.ajax({
+                url: 'auction_getid.php',
+                type: 'POST',
+                data: { vehicleid: vehicleid },
+                success: function (response) {
+                    const result = JSON.parse(response);
+
+                    if (result.success) {
+                        $('#auction_vehicleid').val(result.data.vehicleid);
+                        $('#auctionModal').modal('show');
+                    } else {
+                        showDynamicToast('Error fetching vehicle data: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while fetching the vehicle data.', 'danger');
+                },
+            });
+        }
+
+        $('#auctionForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const vehicleid = $('#auction_vehicleid').val();
+            const schedule_date = $('#schedule_date').val();
+            const starting_bid = $('#starting_bid').val();
+
+            $.ajax({
+                url: 'auction_add.php',
+                type: 'POST',
+                data: {
+                    vehicleid: vehicleid,
+                    schedule_date: schedule_date,
+                    starting_bid: starting_bid
+                },
+                dataType: 'text',  // prevent jQuery from auto-parsing
+                success: function (response) {
+                    const result = JSON.parse(response);
+                    if (result.success) {
+                        $('#auctionModal').modal('hide');
+                        showDynamicToast('Record added successfully!', 'success');
+                        setTimeout(() => location.reload(), 2000); // Optional reload
+                    } else {
+                        showDynamicToast('Error adding record: ' + result.message, 'danger');
+                    }
+                },
+                error: function () {
+                    showDynamicToast('An error occurred while saving record.', 'danger');
+                }
+            });
+        });
+
 
 
     </script>

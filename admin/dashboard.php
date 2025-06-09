@@ -40,6 +40,35 @@ while ($row = mysqli_fetch_assoc($violations_per_month_query)) {
     $violation_counts[] = $row['count'];
 }
 
+// Auction statistics
+$auctionedCars = mysqli_fetch_assoc(mysqli_query($connection, "SELECT COUNT(*) AS total FROM auctions WHERE status = 'Auctioned'"))['total'];
+$forAuctionCars = mysqli_fetch_assoc(mysqli_query($connection, "SELECT COUNT(*) AS total FROM auctions WHERE status = 'For Auction'"))['total'];
+
+// Under Investigation Cars
+$underInvestigation = mysqli_fetch_assoc(mysqli_query($connection, "SELECT COUNT(*) AS total FROM investigations WHERE status = 'Ongoing' OR status = 'Pending'"))['total'];
+
+$location_slots_query = mysqli_query($connection, "
+    SELECT il.area_name, COALESCE(inv.available_slots, 0) AS available_slots
+    FROM impound_locations il
+    LEFT JOIN (
+        SELECT i1.locationid, i1.available_slots
+        FROM inventory i1
+        INNER JOIN (
+            SELECT locationid, MAX(last_updated) AS latest
+            FROM inventory
+            GROUP BY locationid
+        ) latest ON i1.locationid = latest.locationid AND i1.last_updated = latest.latest
+    ) inv ON il.locationid = inv.locationid
+    WHERE il.area_name NOT IN ('Completed', 'Not Applicable')
+    GROUP BY il.locationid
+");
+
+$available_slots = [];
+while ($row = mysqli_fetch_assoc($location_slots_query)) {
+    $available_slots[] = $row;
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -159,6 +188,12 @@ while ($row = mysqli_fetch_assoc($violations_per_month_query)) {
                 </li>
 
                 <li>
+                    <a href="auctions.php" class="text-decoration-none px-3 py-2 d-block">
+                    <i class="bi bi-tag me-2"></i>Auctions
+                    </a>
+                </li>
+
+                <li>
                     <a href="userlogs.php" class="text-decoration-none px-3 py-2 d-block">
                     <i class="bi bi-journal me-2"></i>User Logs
                     </a>
@@ -197,7 +232,58 @@ while ($row = mysqli_fetch_assoc($violations_per_month_query)) {
             <?php endforeach; ?>
             </div>
 
-            <div class="row mt-5">
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <i class="bi bi-gavel"></i> Auctioned Cars
+                            <h3><?= $auctionedCars ?></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white mb-4">
+                        <div class="card-body">
+                            <i class="bi bi-tag"></i> For Auction Cars
+                            <h3><?= $forAuctionCars ?></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white mb-4">
+                        <div class="card-body">
+                            <i class="bi bi-shield-exclamation"></i> Under Investigation
+                            <h3><?= $underInvestigation ?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-geo-alt-fill"></i> Available Slots per Impound Location
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Available Slots</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($available_slots as $slot): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($slot['area_name']) ?></td>
+                                    <td><?= (int)$slot['available_slots'] ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row mt-5 mx-5">
             <div class="col-md-6">
                 <h4>Impounded Vehicles per Month</h4>
                 <canvas id="impoundedChart"></canvas>
