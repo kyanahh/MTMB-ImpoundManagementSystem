@@ -175,7 +175,7 @@ $last_updated = date("Y-m-d H:i:s");
             <div class="px-3">
                 <div class="row">
                     <div class="col-sm-2">
-                        <h2 class="fs-5 mt-1 ms-2">Investigations</h2>
+                        <h2 class="fs-5 mt-1 ms-2">Auctions</h2>
                     </div>
                     <div class="col input-group mb-3">
                         <input type="text" class="form-control" id="searchInput" placeholder="Search" aria-describedby="button-addon2" oninput="search()">

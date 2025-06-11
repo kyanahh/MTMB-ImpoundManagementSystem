@@ -222,6 +222,13 @@ if(isset($_SESSION["logged_in"])){
                                             data-bs-target="#addModal" onclick="openAddModal(' . $row['fineid'] . ')">
                                             </i><i class="bi bi-cash-stack"></i></button>';
                                             }
+
+                                            if ($row['status'] == "Paid") {
+                                            echo '<button title="Release" class="btn btn-success me-2" data-bs-toggle="modal" 
+                                            data-bs-target="#releaseModal" onclick="openReleaseModal(' . $row['fineid'] . ')">
+                                            </i><i class="bi bi-check"></i></button>';
+                                            }
+
                                             echo '<button title="Delete" class="btn btn-danger" onclick="del(' . $row['fineid'] . ')"><i class="bi bi-trash"></i></button>';
                                             echo '</div>';
                                             echo '</td>';
@@ -328,6 +335,25 @@ if(isset($_SESSION["logged_in"])){
                     <!-- Message goes here -->
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Release Modal -->
+    <div class="modal fade" id="releaseModal" tabindex="-1" aria-labelledby="releaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="releaseModalLabel">Release</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to release this as vehicle?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="releaseButton">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
@@ -555,6 +581,51 @@ if(isset($_SESSION["logged_in"])){
                     showDynamicToast('An error occurred while adding the payment.', 'danger');
                 },
             });
+        });
+
+        //---------------------------Release ---------------------------//
+        // JavaScript code for modal and toast handling
+        let releaseIdToConfirm = null;
+
+        // Function to open the confirmation modal
+        function openReleaseModal(fineid) {
+            console.log("Opening modal for record ID:", fineid); // Debugging log
+            releaseIdToConfirm = fineid;
+            const releaseModal = new bootstrap.Modal(document.getElementById('releaseModal'));
+            releaseModal.show();
+        }
+
+        // Event listener for the confirmation button
+        document.getElementById('releaseButton').addEventListener('click', function () {
+            if (releaseIdToConfirm) {
+               $.ajax({
+                    url: "fines_release.php",
+                    method: "POST",
+                    data: { fineid: releaseIdToConfirm },
+                    dataType: "json",
+                    success: function(response) {
+                        console.log('AJAX success:', response);
+
+                        if (response.success) {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('releaseModal'));
+                            modal.hide(); // Close the modal
+
+                            showToast(response.success, "bg-success");
+                            setTimeout(() => {
+                                console.log('Reloading page...');
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            showToast(response.error, "bg-danger");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error:', status, error, xhr.responseText);
+                        showToast('Error confirming the record', 'bg-danger');
+                    }
+                });
+
+            }
         });
 
 
